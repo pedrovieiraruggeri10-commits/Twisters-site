@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Storm Tracker PRO FIXED</title>
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+
+<style>
+
+body{
+margin:0;
+font-family:Arial;
+background:#0b0f19;
+color:white;
+}
+
+#map{
+height:100vh;
+width:100%;
+}
+
+.panel{
+position:fixed;
+top:10px;
+left:10px;
+background:rgba(0,0,0,0.85);
+padding:12px;
+border-radius:10px;
+z-index:9999;
+max-width:210px;
+}
+
+.info{
+position:fixed;
+top:10px;
+right:10px;
+background:rgba(0,0,0,0.85);
+padding:12px;
+border-radius:10px;
+z-index:9999;
+}
+
+button,input{
+display:block;
+margin:5px;
+padding:7px;
+width:180px;
+background:#111;
+color:white;
+border:1px solid #444;
+cursor:pointer;
+border-radius:6px;
+}
+
+button:hover{
+background:#222;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="map"></div>
+
+<div class="panel">
+
+<b>Tempo real</b>
+
+<button onclick="usarLocal()">Usar localização</button>
+<button onclick="radar()">Radar chuva</button>
+<button onclick="nuvens()">Satélite nuvens</button>
+<button onclick="vento()">Mapa vento</button>
+
+<hr>
+
+<b>Tempestades</b>
+
+<button onclick="detectarTempestade()">Detectar tempestade</button>
+<button onclick="simularTornado()">Simular tornado</button>
+
+<hr>
+
+<b>Previsão</b>
+
+<input id="cidade" placeholder="Digite cidade">
+
+<button onclick="buscarCidade()">Buscar cidade</button>
+
+</div>
+
+<div class="info">
+
+Cidade: <span id="cidadeNome">--</span><br>
+Clima: <span id="clima">--</span><br>
+Temp: <span id="temp">--</span>°C<br>
+Vento: <span id="ventoInfo">--</span> km/h<br>
+Risco Tornado: <span id="tornadoRisco">--</span>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+
+const API="d82cd20d84217a67b0fb5b266ffe23df"
+
+var map=L.map('map').setView([0,0],2)
+
+L.tileLayer(
+'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+{maxZoom:19}
+).addTo(map)
+
+var layer
+var alerta
+var tornado
+
+function limpar(){
+
+if(layer) map.removeLayer(layer)
+if(alerta) map.removeLayer(alerta)
+
+}
+
+function radar(){
+
+limpar()
+
+layer=L.tileLayer(
+`https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${API}`
+).addTo(map)
+
+}
+
+function nuvens(){
+
+limpar()
+
+layer=L.tileLayer(
+`https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${API}`
+).addTo(map)
+
+}
+
+function vento(){
+
+limpar()
+
+layer=L.tileLayer(
+`https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${API}`
+).addTo(map)
+
+}
+
+function usarLocal(){
+
+navigator.geolocation.getCurrentPosition(function(pos){
+
+let lat=pos.coords.latitude
+let lon=pos.coords.longitude
+
+map.setView([lat,lon],8)
+
+buscarClima(lat,lon)
+
+})
+
+}
+
+function buscarClima(lat,lon){
+
+fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${API}&units=metric`)
+.then(r=>r.json())
+.then(data=>{
+
+let vento=data.wind.speed*3.6
+let pressao=data.main.pressure
+let temp=data.main.temp
+
+document.getElementById("cidadeNome").innerText=data.name
+document.getElementById("clima").innerText=data.weather[0].description
+document.getElementById("temp").innerText=temp
+document.getElementById("ventoInfo").innerText=Math.round(vento)
+
+detectarTornado(lat,lon,vento,pressao,temp)
+
+})
+
+}
+
+function buscarCidade(){
+
+let cidade=document.getElementById("cidade").value
+
+fetch(`https://api.openweathermap.org/data/2.5/weather?q=${cidade}&appid=${API}&units=metric`)
+.then(r=>r.json())
+.then(data=>{
+
+let lat=data.coord.lat
+let lon=data.coord.lon
+
+map.setView([lat,lon],8)
+
+buscarClima(lat,lon)
+
+})
+
+}
+
+function detectarTornado(lat,lon,vento,pressao,temp){
+
+let risco="Baixo"
+
+if(vento>50 && pressao<1000 && temp>22){
+
+risco="ALTO"
+
+alerta=L.circle([lat,lon],{
+
+radius:80000,
+color:"red",
+fillOpacity:0.2
+
+}).addTo(map)
+
+}
+
+else if(vento>35){
+
+risco="Moderado"
+
+alerta=L.circle([lat,lon],{
+
+radius:60000,
+color:"orange",
+fillOpacity:0.2
+
+}).addTo(map)
+
+}
+
+document.getElementById("tornadoRisco").innerText=risco
+
+}
+
+function detectarTempestade(){
+
+usarLocal()
+
+}
+
+function simularTornado(){
+
+if(tornado) map.removeLayer(tornado)
+
+let lat=35
+let lon=-97
+
+tornado=L.circle([lat,lon],{
+
+radius:30000,
+color:"purple"
+
+}).addTo(map)
+
+setInterval(()=>{
+
+lat+=(Math.random()-0.5)*0.4
+lon+=(Math.random()-0.5)*0.4
+
+tornado.setLatLng([lat,lon])
+
+},1000)
+
+}
+
+</script>
+
+</body>
+</html>
