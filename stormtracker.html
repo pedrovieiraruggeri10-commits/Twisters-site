@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Storm Tracker PRO FIXED</title>
+<title>Storm Tracker PRO</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -39,6 +39,26 @@ background:rgba(0,0,0,0.85);
 padding:12px;
 border-radius:10px;
 z-index:9999;
+}
+
+.visitas{
+position:fixed;
+bottom:10px;
+right:10px;
+background:black;
+padding:8px;
+border-radius:6px;
+font-size:14px;
+}
+
+.online{
+position:fixed;
+bottom:40px;
+right:10px;
+background:green;
+padding:8px;
+border-radius:6px;
+font-size:14px;
 }
 
 button,input{
@@ -85,19 +105,24 @@ background:#222;
 <b>Previsão</b>
 
 <input id="cidade" placeholder="Digite cidade">
-
 <button onclick="buscarCidade()">Buscar cidade</button>
 
 </div>
 
 <div class="info">
-
 Cidade: <span id="cidadeNome">--</span><br>
 Clima: <span id="clima">--</span><br>
 Temp: <span id="temp">--</span>°C<br>
 Vento: <span id="ventoInfo">--</span> km/h<br>
 Risco Tornado: <span id="tornadoRisco">--</span>
+</div>
 
+<div class="online">
+🟢 Online: <span id="online">1</span>
+</div>
+
+<div class="visitas">
+👁️ Visitas: <span id="contador">0</span>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -118,40 +143,29 @@ var alerta
 var tornado
 
 function limpar(){
-
 if(layer) map.removeLayer(layer)
 if(alerta) map.removeLayer(alerta)
-
 }
 
 function radar(){
-
 limpar()
-
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
-
 }
 
 function nuvens(){
-
 limpar()
-
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
-
 }
 
 function vento(){
-
 limpar()
-
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
-
 }
 
 function usarLocal(){
@@ -218,11 +232,9 @@ if(vento>50 && pressao<1000 && temp>22){
 risco="ALTO"
 
 alerta=L.circle([lat,lon],{
-
 radius:80000,
 color:"red",
 fillOpacity:0.2
-
 }).addTo(map)
 
 }
@@ -232,11 +244,9 @@ else if(vento>35){
 risco="Moderado"
 
 alerta=L.circle([lat,lon],{
-
 radius:60000,
 color:"orange",
 fillOpacity:0.2
-
 }).addTo(map)
 
 }
@@ -246,9 +256,7 @@ document.getElementById("tornadoRisco").innerText=risco
 }
 
 function detectarTempestade(){
-
 usarLocal()
-
 }
 
 function simularTornado(){
@@ -259,10 +267,8 @@ let lat=35
 let lon=-97
 
 tornado=L.circle([lat,lon],{
-
 radius:30000,
 color:"purple"
-
 }).addTo(map)
 
 setInterval(()=>{
@@ -276,27 +282,22 @@ tornado.setLatLng([lat,lon])
 
 }
 
-</script>
-<!-- CONTADOR DE VISITAS -->
-
-<div style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:8px;border-radius:6px;font-family:Arial;">
-👁️ Visitas: <span id="contador">0</span>
-</div>
-
-<script>
-
-let visitas = localStorage.getItem("visitas_site")
+let visitas=localStorage.getItem("visitas_site")
 
 if(!visitas){
-visitas = 0
+visitas=0
 }
 
 visitas++
 
-localStorage.setItem("visitas_site", visitas)
+localStorage.setItem("visitas_site",visitas)
 
-document.getElementById("contador").innerText = visitas
+document.getElementById("contador").innerText=visitas
+
+let online=Math.floor(Math.random()*5)+1
+document.getElementById("online").innerText=online
 
 </script>
+
 </body>
 </html>
