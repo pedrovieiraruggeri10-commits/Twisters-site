@@ -277,6 +277,26 @@ tornado.setLatLng([lat,lon])
 }
 
 </script>
+<!-- CONTADOR DE VISITAS -->
 
+<div style="position:fixed;bottom:10px;right:10px;background:black;color:white;padding:8px;border-radius:6px;font-family:Arial;">
+👁️ Visitas: <span id="contador">0</span>
+</div>
+
+<script>
+
+let visitas = localStorage.getItem("visitas_site")
+
+if(!visitas){
+visitas = 0
+}
+
+visitas++
+
+localStorage.setItem("visitas_site", visitas)
+
+document.getElementById("contador").innerText = visitas
+
+</script>
 </body>
 </html>
