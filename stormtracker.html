@@ -51,16 +51,6 @@ border-radius:6px;
 font-size:14px;
 }
 
-.online{
-position:fixed;
-bottom:40px;
-right:10px;
-background:green;
-padding:8px;
-border-radius:6px;
-font-size:14px;
-}
-
 button,input{
 display:block;
 margin:5px;
@@ -105,20 +95,19 @@ background:#222;
 <b>Previsão</b>
 
 <input id="cidade" placeholder="Digite cidade">
+
 <button onclick="buscarCidade()">Buscar cidade</button>
 
 </div>
 
 <div class="info">
+
 Cidade: <span id="cidadeNome">--</span><br>
 Clima: <span id="clima">--</span><br>
 Temp: <span id="temp">--</span>°C<br>
 Vento: <span id="ventoInfo">--</span> km/h<br>
 Risco Tornado: <span id="tornadoRisco">--</span>
-</div>
 
-<div class="online">
-🟢 Online: <span id="online">1</span>
 </div>
 
 <div class="visitas">
@@ -143,29 +132,40 @@ var alerta
 var tornado
 
 function limpar(){
+
 if(layer) map.removeLayer(layer)
 if(alerta) map.removeLayer(alerta)
+
 }
 
 function radar(){
+
 limpar()
+
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/precipitation_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
+
 }
 
 function nuvens(){
+
 limpar()
+
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/clouds_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
+
 }
 
 function vento(){
+
 limpar()
+
 layer=L.tileLayer(
 `https://tile.openweathermap.org/map/wind_new/{z}/{x}/{y}.png?appid=${API}`
 ).addTo(map)
+
 }
 
 function usarLocal(){
@@ -293,9 +293,6 @@ visitas++
 localStorage.setItem("visitas_site",visitas)
 
 document.getElementById("contador").innerText=visitas
-
-let online=Math.floor(Math.random()*5)+1
-document.getElementById("online").innerText=online
 
 </script>
 
